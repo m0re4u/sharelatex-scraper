@@ -4,23 +4,24 @@ import argparse
 import logging
 
 import login
-
-logger = logging.getLogger(__name__)
+import session
 
 LOG_FOLDER = 'logs'
+
+logger = logging.getLogger(__name__)
 
 
 def main(args):
     with open(args.loginfile, 'r') as f:
         userdata = json.load(f)
-    logger.debug(userdata)
-    l = login.LoginSession(userdata)
-    l.login()
-    print(l.get_project_list())
+    logger.debug("Downloading for user: {}".format(userdata['email']))
+
+    s = session.ShareLatexSession(userdata)
+    for name, id in s.get_project_list():
+        s.download_project(name, id, args.output)
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument("output", help="output folder")
     parser.add_argument("loginfile", help="json file containing sharelatex account credentials")
@@ -35,20 +36,20 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
+    # Set root logger level
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
+    # Set terminal output log level and format
     ch = logging.StreamHandler()
     if args.log_level not in logging._levelToName.values():
         exit('Not a valid log level!')
     ch.setLevel(args.log_level)
-
-    # add formatter to ch
     ch.setFormatter(logging.Formatter(
         '%(levelname)s: %(name)s: %(message)s'
     ))
 
-    # Create file handler
+    # Set log file output log level and format
     if (args.log_file):
         fh = logging.FileHandler(args.log_file, mode='w')
     else:
@@ -60,15 +61,19 @@ if __name__ == '__main__':
         '%(asctime)s: %(levelname)s: %(name)s: %(message)s'
     ))
 
-    # add ch to root logger
+    # Add handlers to root logger
     root.addHandler(fh)
     root.addHandler(ch)
+
+    # Make sure the user credentials file exists
     if not os.path.isfile(args.loginfile):
         logger.error("{} is not a valid login file!".format(args.loginfile))
         exit()
+
+    # Make sure there is an output folder
     if not os.path.isdir(args.output):
         os.mkdir(args.output)
         logger.debug("Created {} as a folder".format(args.output))
 
-    logger.debug("Saving ShareLatex projects in \'{}\'".format(args.output))
+    logger.debug("Saving ShareLatex projects in \'{}\'".format(os.path.realpath(args.output)))
     main(args)
