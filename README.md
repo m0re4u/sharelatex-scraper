@@ -12,3 +12,9 @@ Download all your ShareLatex projects to back them up locally.
     "password": "daggertail"
 }
 ```
+
+## Running the script
+See `python3 main.py -h` for help, or try the example command below.
+```
+python3 main.py output test.json  -l DEBUG
+```
