@@ -9,6 +9,6 @@ Download all your ShareLatex projects to back them up locally.
 ```
 {
     "email": "test@example.com",
-    "password": "daggetail"
+    "password": "daggertail"
 }
 ```
